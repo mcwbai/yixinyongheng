@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>需要密码</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: #0f0f0f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, "Microsoft YaHei", sans-serif;
+  }
+
+  .lock-screen {
+    text-align: center;
+    padding: 48px 32px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    border: 1px solid #2a2a2a;
+    width: 480px;
+    max-width: 90vw;
+  }
+
+  .lock-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+  }
+
+  .lock-screen h2 {
+    color: #ccc;
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 24px;
+  }
+
+  .lock-screen input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: #0f0f0f;
+    color: #fff;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .lock-screen input:focus {
+    border-color: #555;
+  }
+
+  .lock-screen button {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #333;
+    color: #ccc;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .lock-screen button:hover {
+    background: #444;
+  }
+
+  .error-msg {
+    color: #e05555;
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .hint-toggle {
+    margin-top: 20px;
+    color: #666;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .hint-toggle:hover {
+    color: #999;
+  }
+
+  .hint-content {
+    display: none;
+    margin-top: 14px;
+    color: #888;
+    font-size: 14px;
+    line-height: 1.8;
+    font-family: "Courier New", monospace;
+  }
+
+  .hint-content.show {
+    display: block;
+  }
+
+  .content-screen {
+    display: none;
+    text-align: center;
+    padding: 24px;
+    color: #ccc;
+    font-size: 18px;
+  }
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-icon">❓</div>
+  <h2>容内看查以码密入输请</h2>
+  <input type="password" id="passwordInput" placeholder="输入密码..." autofocus>
+  <button onclick="checkPassword()">确认</button>
+  <div class="error-msg" id="errorMsg">密码错误，请重试</div>
+  <div class="hint-toggle" onclick="document.getElementById('hintBox').classList.add('show');this.style.display='none'">💡 提示</div>
+  <div class="hint-content" id="hintBox">
+    <div>12345678 = 4634</div>
+    <div>1234</div>
+    <div>1234</div>
+    <div>2468</div>
+  </div>
+</div>
+
+<div class="content-screen" id="contentScreen">
+  <p>❤️</p>
+</div>
+
+<script>
+  const PASSWORD_HASH = '7ba6de8b74a1751302131909116affb1ef205843f654190346be26ee8a9177da';
+
+  async function sha256(text) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function checkPassword() {
+    const input = document.getElementById('passwordInput').value;
+    const hash = await sha256(input);
+    if (hash === PASSWORD_HASH) {
+      document.getElementById('lockScreen').style.display = 'none';
+      document.getElementById('contentScreen').style.display = 'block';
+    } else {
+      document.getElementById('errorMsg').style.display = 'block';
+      document.getElementById('passwordInput').value = '';
+    }
+  }
+
+  document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkPassword();
+  });
+</script>
+
+</body>
+</html>
