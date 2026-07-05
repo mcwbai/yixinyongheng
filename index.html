@@ -38,21 +38,28 @@
     margin-bottom: 24px;
   }
 
-  .lock-screen input {
-    width: 100%;
-    padding: 12px 16px;
+  .pin-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .pin-input {
+    width: 56px;
+    height: 60px;
+    padding: 0;
     border: 1px solid #333;
     border-radius: 8px;
     background: #0f0f0f;
     color: #fff;
-    font-size: 24px;
+    font-size: 28px;
     text-align: center;
-    letter-spacing: 12px;
     outline: none;
     transition: border-color 0.2s;
   }
 
-  .lock-screen input:focus {
+  .pin-input:focus {
     border-color: #555;
   }
 
@@ -126,7 +133,12 @@
 <div class="lock-screen" id="lockScreen">
   <div class="lock-icon">❓</div>
   <h2>请输入密码</h2>
-  <input type="password" id="passwordInput" placeholder="四位数字密码" maxlength="4" inputmode="numeric" autofocus>
+  <div class="pin-container">
+    <input type="password" class="pin-input" id="pin1" maxlength="1" inputmode="numeric" autofocus>
+    <input type="password" class="pin-input" id="pin2" maxlength="1" inputmode="numeric">
+    <input type="password" class="pin-input" id="pin3" maxlength="1" inputmode="numeric">
+    <input type="password" class="pin-input" id="pin4" maxlength="1" inputmode="numeric">
+  </div>
   <button onclick="checkPassword()">确认</button>
   <div class="error-msg" id="errorMsg">密码错误，请重试</div>
   <div class="hint-toggle" onclick="document.getElementById('hintBox').classList.add('show');this.style.display='none'">💡 提示</div>
@@ -150,24 +162,38 @@
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
+  function getPassword() {
+    return ['pin1','pin2','pin3','pin4'].map(id => document.getElementById(id).value).join('');
+  }
+
   async function checkPassword() {
-    const input = document.getElementById('passwordInput').value;
+    const input = getPassword();
+    if (input.length < 4) return;
     const hash = await sha256(input);
     if (hash === PASSWORD_HASH) {
       document.getElementById('lockScreen').style.display = 'none';
       document.getElementById('contentScreen').style.display = 'block';
     } else {
       document.getElementById('errorMsg').style.display = 'block';
-      document.getElementById('passwordInput').value = '';
+      ['pin1','pin2','pin3','pin4'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('pin1').focus();
     }
   }
 
-  document.getElementById('passwordInput').addEventListener('input', function(e) {
-    this.value = this.value.replace(/\D/g, '');
-  });
+  document.querySelectorAll('.pin-input').forEach((input, idx, inputs) => {
+    input.addEventListener('input', function(e) {
+      this.value = this.value.replace(/\D/g, '');
+      if (this.value && idx < inputs.length - 1) {
+        inputs[idx + 1].focus();
+      }
+      if (getPassword().length === 4) checkPassword();
+    });
 
-  document.getElementById('passwordInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') checkPassword();
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !this.value && idx > 0) {
+        inputs[idx - 1].focus();
+      }
+    });
   });
 </script>
 
