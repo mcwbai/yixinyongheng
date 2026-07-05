@@ -45,8 +45,9 @@
     border-radius: 8px;
     background: #0f0f0f;
     color: #fff;
-    font-size: 16px;
+    font-size: 24px;
     text-align: center;
+    letter-spacing: 12px;
     outline: none;
     transition: border-color 0.2s;
   }
@@ -125,7 +126,7 @@
 <div class="lock-screen" id="lockScreen">
   <div class="lock-icon">❓</div>
   <h2>请输入密码</h2>
-  <input type="password" id="passwordInput" placeholder="输入密码..." autofocus>
+  <input type="password" id="passwordInput" placeholder="四位数字密码" maxlength="4" inputmode="numeric" autofocus>
   <button onclick="checkPassword()">确认</button>
   <div class="error-msg" id="errorMsg">密码错误，请重试</div>
   <div class="hint-toggle" onclick="document.getElementById('hintBox').classList.add('show');this.style.display='none'">💡 提示</div>
@@ -160,6 +161,10 @@
       document.getElementById('passwordInput').value = '';
     }
   }
+
+  document.getElementById('passwordInput').addEventListener('input', function(e) {
+    this.value = this.value.replace(/\D/g, '');
+  });
 
   document.getElementById('passwordInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') checkPassword();
